@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { marked } from 'marked'
 
 const Icon = () => (
@@ -10,7 +10,10 @@ const Icon = () => (
 export default function App() {
   const [text, setText] = useState(() => localStorage.getItem('md') ?? '')
   const [copied, setCopied] = useState(null)
+  const [split, setSplit] = useState(50) // %
   const previewRef = useRef(null)
+  const containerRef = useRef(null)
+  const dragging = useRef(false)
 
   useEffect(() => { localStorage.setItem('md', text) }, [text])
 
@@ -28,6 +31,20 @@ export default function App() {
     setTimeout(() => setCopied(null), 1500)
   }
 
+  const onMouseMove = useCallback(e => {
+    if (!dragging.current) return
+    const { left, width } = containerRef.current.getBoundingClientRect()
+    setSplit(Math.min(90, Math.max(10, (e.clientX - left) / width * 100)))
+  }, [])
+
+  const onMouseUp = useCallback(() => { dragging.current = false; document.body.style.cursor = '' }, [])
+
+  useEffect(() => {
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+    return () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp) }
+  }, [onMouseMove, onMouseUp])
+
   const btn = (type, label) => (
     <button onClick={() => copy(type)} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', fontSize: 11, cursor: 'pointer', color: copied === type ? '#16a34a' : '#444', background: 'rgba(255,255,255,0.9)', border: '1px solid #ccc', borderRadius: 4 }}>
       <Icon />{copied === type ? 'Copied!' : label}
@@ -40,8 +57,8 @@ export default function App() {
         <strong style={{ color: '#000' }}>delempty</strong>
         <span>ペーストで空行を自動削除するMarkdownプレビュー</span>
       </header>
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        <div style={{ flex: 1, position: 'relative', borderRight: '1px solid #ccc' }}>
+      <div ref={containerRef} style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <div style={{ width: `${split}%`, position: 'relative', flexShrink: 0 }}>
           <textarea
             style={{ width: '100%', height: '100%', padding: 16, paddingBottom: 40, fontSize: 14, resize: 'none', border: 'none', outline: 'none', boxSizing: 'border-box' }}
             value={text}
@@ -54,6 +71,10 @@ export default function App() {
             {btn('plain', 'Copy Plain')}
           </div>
         </div>
+        <div
+          onMouseDown={() => { dragging.current = true; document.body.style.cursor = 'col-resize' }}
+          style={{ width: 5, cursor: 'col-resize', background: '#ccc', flexShrink: 0 }}
+        />
         <div ref={previewRef} style={{ flex: 1, padding: 16, overflow: 'auto' }}
           dangerouslySetInnerHTML={{ __html: marked(text) }} />
       </div>
