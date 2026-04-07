@@ -131,6 +131,9 @@ export default function App() {
             value={text} onChange={e => setText(e.target.value)} onPaste={handlePaste}
             placeholder="Markdown を入力..."
           />
+          <div style={{ position: 'absolute', bottom: 8, left: 8, fontSize: 10, color: '#aaa' }}>
+            {text.length} 文字
+          </div>
           <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 6 }}>
             {copyBtn('md', 'Copy MD')}{copyBtn('plain', 'Copy Plain')}
           </div>
