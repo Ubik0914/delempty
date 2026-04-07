@@ -100,8 +100,15 @@ export default function App() {
   }, [onTouchMove, onTouchEnd])
 
   const prevHighlight = useRef(null)
+  const syncTimer = useRef(null)
 
   function syncScroll(e) {
+    const snapshot = { selectionStart: e.target.selectionStart, value: e.target.value, target: e.target }
+    clearTimeout(syncTimer.current)
+    syncTimer.current = setTimeout(() => doSync(snapshot), 120)
+  }
+
+  function doSync(e) {
     const { selectionStart, value } = e.target
     if (!value) return
     const cursorLine = value.slice(0, selectionStart).split('\n').length - 1
