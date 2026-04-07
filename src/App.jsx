@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { marked } from 'marked'
 
 const Icon = () => (
@@ -8,9 +8,11 @@ const Icon = () => (
 )
 
 export default function App() {
-  const [text, setText] = useState('')
+  const [text, setText] = useState(() => localStorage.getItem('md') ?? '')
   const [copied, setCopied] = useState(null)
   const previewRef = useRef(null)
+
+  useEffect(() => { localStorage.setItem('md', text) }, [text])
 
   function handlePaste(e) {
     e.preventDefault()
@@ -21,14 +23,13 @@ export default function App() {
   }
 
   function copy(type) {
-    const content = type === 'md' ? text : (previewRef.current?.innerText ?? text)
-    navigator.clipboard.writeText(content)
+    navigator.clipboard.writeText(type === 'md' ? text : (previewRef.current?.innerText ?? text))
     setCopied(type)
     setTimeout(() => setCopied(null), 1500)
   }
 
   const btn = (type, label) => (
-    <button onClick={() => copy(type)} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', fontSize: 11, cursor: 'pointer', color: copied === type ? '#16a34a' : '#444', background: 'none', border: '1px solid #ccc', borderRadius: 4 }}>
+    <button onClick={() => copy(type)} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', fontSize: 11, cursor: 'pointer', color: copied === type ? '#16a34a' : '#444', background: 'rgba(255,255,255,0.9)', border: '1px solid #ccc', borderRadius: 4 }}>
       <Icon />{copied === type ? 'Copied!' : label}
     </button>
   )
@@ -38,19 +39,21 @@ export default function App() {
       <header style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px 12px', borderBottom: '1px solid #ccc', fontSize: 12, color: '#666' }}>
         <strong style={{ color: '#000' }}>delempty</strong>
         <span>ペーストで空行を自動削除するMarkdownプレビュー</span>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
-          {btn('md', 'Copy MD')}
-          {btn('plain', 'Copy Plain')}
-        </div>
       </header>
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        <textarea
-          style={{ flex: 1, padding: 16, fontSize: 14, resize: 'none', border: 'none', borderRight: '1px solid #ccc', outline: 'none' }}
-          value={text}
-          onChange={e => setText(e.target.value)}
-          onPaste={handlePaste}
-          placeholder="Markdown を入力..."
-        />
+        <div style={{ flex: 1, position: 'relative', borderRight: '1px solid #ccc' }}>
+          <textarea
+            style={{ width: '100%', height: '100%', padding: 16, paddingBottom: 40, fontSize: 14, resize: 'none', border: 'none', outline: 'none', boxSizing: 'border-box' }}
+            value={text}
+            onChange={e => setText(e.target.value)}
+            onPaste={handlePaste}
+            placeholder="Markdown を入力..."
+          />
+          <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 6 }}>
+            {btn('md', 'Copy MD')}
+            {btn('plain', 'Copy Plain')}
+          </div>
+        </div>
         <div ref={previewRef} style={{ flex: 1, padding: 16, overflow: 'auto' }}
           dangerouslySetInnerHTML={{ __html: marked(text) }} />
       </div>
