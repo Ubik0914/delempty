@@ -1,5 +1,16 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { marked } from 'marked'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github.css'
+
+marked.use({
+  renderer: {
+    code({ text, lang }) {
+      const language = hljs.getLanguage(lang) ? lang : 'plaintext'
+      return `<pre><code class="hljs language-${language}">${hljs.highlight(text, { language }).value}</code></pre>`
+    }
+  }
+})
 
 const CopyIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" width="14" height="14">
@@ -112,7 +123,9 @@ export default function App() {
     const target = blocks[tokenIdx]
     if (!target) return
 
-    target.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    const elRect = el.getBoundingClientRect()
+    const targetRect = target.getBoundingClientRect()
+    el.scrollTop += targetRect.top - elRect.top - 24
 
     clearTimeout(highlightTimer.current)
     target.style.transition = 'none'
