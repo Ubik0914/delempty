@@ -59,6 +59,15 @@ body {
   height: 100vh;
 }
 
+@keyframes line-flash {
+  0%   { background-color: rgba(250, 204, 21, 0.5); }
+  100% { background-color: transparent; }
+}
+
+.line-flash {
+  animation: line-flash 1s ease-out forwards;
+}
+
 h1,
 h2 {
   font-family: var(--heading);

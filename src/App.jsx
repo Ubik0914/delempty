@@ -100,7 +100,7 @@ export default function App() {
     return () => { window.removeEventListener('touchmove', onTouchMove); window.removeEventListener('touchend', onTouchEnd) }
   }, [onTouchMove, onTouchEnd])
 
-  const highlightTimer = useRef(null)
+  const prevHighlight = useRef(null)
 
   function syncScroll(e) {
     const { selectionStart, value } = e.target
@@ -109,31 +109,33 @@ export default function App() {
     const el = previewRef.current
     if (!el) return
 
-    // Map cursor line → block token index
+    // Map cursor line → block index (skip space tokens)
     const tokens = marked.lexer(value)
-    let line = 0, tokenIdx = 0
-    for (let i = 0; i < tokens.length; i++) {
-      const tokenLines = (tokens[i].raw.match(/\n/g) || []).length
-      tokenIdx = i
-      if (line + tokenLines > cursorLine) break
-      line += tokenLines
+    let line = 0, blockIdx = 0
+    for (const token of tokens) {
+      const tLines = (token.raw.match(/\n/g) || []).length
+      if (token.type !== 'space') {
+        if (line + tLines > cursorLine) break
+        blockIdx++
+      }
+      line += tLines
     }
-
-    const blocks = Array.from(el.children)
-    const target = blocks[tokenIdx]
+    blockIdx = Math.min(blockIdx, el.children.length - 1)
+    const target = el.children[blockIdx]
     if (!target) return
 
-    const elRect = el.getBoundingClientRect()
-    const targetRect = target.getBoundingClientRect()
-    el.scrollTop += targetRect.top - elRect.top - 24
+    // Scroll: put target near top of container
+    el.scrollTop = target.offsetTop - 24
 
-    clearTimeout(highlightTimer.current)
-    target.style.transition = 'none'
-    target.style.backgroundColor = 'rgba(250, 204, 21, 0.45)'
-    highlightTimer.current = setTimeout(() => {
-      target.style.transition = 'background-color 0.8s'
-      target.style.backgroundColor = ''
-    }, 120)
+    // Highlight: clear prev, trigger animation via class toggle
+    if (prevHighlight.current) {
+      prevHighlight.current.classList.remove('line-flash')
+      void prevHighlight.current.offsetWidth // reflow to reset animation
+    }
+    target.classList.remove('line-flash')
+    void target.offsetWidth
+    target.classList.add('line-flash')
+    prevHighlight.current = target
   }
 
   const showFirst = split > 0
