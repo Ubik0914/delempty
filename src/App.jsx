@@ -93,29 +93,34 @@ export default function App() {
 
   function syncScroll(e) {
     const { selectionStart, value } = e.target
-    const line = value.slice(0, selectionStart).split('\n').length - 1
-    const total = value.split('\n').length - 1
-    const ratio = total > 0 ? line / total : 0
+    if (!value) return
+    const cursorLine = value.slice(0, selectionStart).split('\n').length - 1
     const el = previewRef.current
     if (!el) return
-    el.scrollTop = ratio * (el.scrollHeight - el.clientHeight)
 
-    requestAnimationFrame(() => {
-      const containerRect = el.getBoundingClientRect()
-      const blocks = el.querySelectorAll('p,h1,h2,h3,h4,h5,h6,li,blockquote,pre,table')
-      const target = Array.from(blocks).find(b => {
-        const r = b.getBoundingClientRect()
-        return r.bottom > containerRect.top && r.top < containerRect.bottom
-      })
-      if (!target) return
-      clearTimeout(highlightTimer.current)
-      target.style.transition = 'none'
-      target.style.backgroundColor = 'rgba(250, 204, 21, 0.45)'
-      highlightTimer.current = setTimeout(() => {
-        target.style.transition = 'background-color 0.8s'
-        target.style.backgroundColor = ''
-      }, 120)
-    })
+    // Map cursor line → block token index
+    const tokens = marked.lexer(value)
+    let line = 0, tokenIdx = 0
+    for (let i = 0; i < tokens.length; i++) {
+      const tokenLines = (tokens[i].raw.match(/\n/g) || []).length
+      tokenIdx = i
+      if (line + tokenLines > cursorLine) break
+      line += tokenLines
+    }
+
+    const blocks = Array.from(el.children)
+    const target = blocks[tokenIdx]
+    if (!target) return
+
+    target.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+
+    clearTimeout(highlightTimer.current)
+    target.style.transition = 'none'
+    target.style.backgroundColor = 'rgba(250, 204, 21, 0.45)'
+    highlightTimer.current = setTimeout(() => {
+      target.style.transition = 'background-color 0.8s'
+      target.style.backgroundColor = ''
+    }, 120)
   }
 
   const showFirst = split > 0
