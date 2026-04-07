@@ -49,7 +49,9 @@ export default function App() {
   function handlePaste(e) {
     e.preventDefault()
     const pasted = e.clipboardData.getData('text')
-    const cleaned = pasted.replace(/\n\s*\n+/g, '\n')
+    const cleaned = pasted
+      .replace(/\n\s*\n+/g, '\n')                    // 空行を除去
+      .replace(/([^\n])\n(#{1,6} )/g, '$1\n\n$2')    // 見出し前の空行を復元
     const { selectionStart: s, selectionEnd: en } = e.target
     setText(text.slice(0, s) + cleaned + text.slice(en))
   }
