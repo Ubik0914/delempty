@@ -132,7 +132,10 @@ export default function App() {
 
     // Scroll: match cursor's vertical ratio in editor to preview
     const textarea = e.target
-    const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight) || 20
+    const cs = getComputedStyle(textarea)
+    const lineHeight = cs.lineHeight === 'normal'
+      ? parseFloat(cs.fontSize) * 1.4
+      : parseFloat(cs.lineHeight)
     const cursorTop = cursorLine * lineHeight - textarea.scrollTop
     const ratio = Math.max(0, Math.min(1, cursorTop / textarea.clientHeight))
     el.scrollTop = target.offsetTop - ratio * el.clientHeight
