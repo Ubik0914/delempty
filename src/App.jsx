@@ -89,13 +89,33 @@ export default function App() {
     return () => { window.removeEventListener('touchmove', onTouchMove); window.removeEventListener('touchend', onTouchEnd) }
   }, [onTouchMove, onTouchEnd])
 
+  const highlightTimer = useRef(null)
+
   function syncScroll(e) {
     const { selectionStart, value } = e.target
     const line = value.slice(0, selectionStart).split('\n').length - 1
     const total = value.split('\n').length - 1
     const ratio = total > 0 ? line / total : 0
     const el = previewRef.current
-    if (el) el.scrollTop = ratio * (el.scrollHeight - el.clientHeight)
+    if (!el) return
+    el.scrollTop = ratio * (el.scrollHeight - el.clientHeight)
+
+    requestAnimationFrame(() => {
+      const containerRect = el.getBoundingClientRect()
+      const blocks = el.querySelectorAll('p,h1,h2,h3,h4,h5,h6,li,blockquote,pre,table')
+      const target = Array.from(blocks).find(b => {
+        const r = b.getBoundingClientRect()
+        return r.bottom > containerRect.top && r.top < containerRect.bottom
+      })
+      if (!target) return
+      clearTimeout(highlightTimer.current)
+      target.style.transition = 'none'
+      target.style.backgroundColor = 'rgba(250, 204, 21, 0.45)'
+      highlightTimer.current = setTimeout(() => {
+        target.style.transition = 'background-color 0.8s'
+        target.style.backgroundColor = ''
+      }, 120)
+    })
   }
 
   const showFirst = split > 0
