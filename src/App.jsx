@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { marked } from 'marked'
 import hljs from 'highlight.js'
-import 'highlight.js/styles/github.css'
 
 marked.use({
   renderer: {
@@ -124,8 +123,12 @@ export default function App() {
     const target = el.children[blockIdx]
     if (!target) return
 
-    // Scroll: put target near top of container
-    el.scrollTop = target.offsetTop - 24
+    // Scroll: match cursor's vertical ratio in editor to preview
+    const textarea = e.target
+    const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight) || 20
+    const cursorTop = cursorLine * lineHeight - textarea.scrollTop
+    const ratio = Math.max(0, Math.min(1, cursorTop / textarea.clientHeight))
+    el.scrollTop = target.offsetTop - ratio * el.clientHeight
 
     // Highlight: clear prev, trigger animation via class toggle
     if (prevHighlight.current) {
