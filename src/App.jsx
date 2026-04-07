@@ -89,6 +89,15 @@ export default function App() {
     return () => { window.removeEventListener('touchmove', onTouchMove); window.removeEventListener('touchend', onTouchEnd) }
   }, [onTouchMove, onTouchEnd])
 
+  function syncScroll(e) {
+    const { selectionStart, value } = e.target
+    const line = value.slice(0, selectionStart).split('\n').length - 1
+    const total = value.split('\n').length - 1
+    const ratio = total > 0 ? line / total : 0
+    const el = previewRef.current
+    if (el) el.scrollTop = ratio * (el.scrollHeight - el.clientHeight)
+  }
+
   const showFirst = split > 0
   const showSecond = split < 100
   const showDivider = split > 0 && split < 100
@@ -128,7 +137,7 @@ export default function App() {
         <div style={{ ...firstSize, position: 'relative', flexShrink: 0, display: showFirst ? 'block' : 'none' }}>
           <textarea
             style={{ width: '100%', height: '100%', padding: 16, paddingBottom: 40, fontSize: 14, resize: 'none', border: 'none', outline: 'none', boxSizing: 'border-box' }}
-            value={text} onChange={e => setText(e.target.value)} onPaste={handlePaste}
+            value={text} onChange={e => setText(e.target.value)} onPaste={handlePaste} onSelect={syncScroll} onKeyUp={syncScroll}
             placeholder="Markdown を入力..."
           />
           <div style={{ position: 'absolute', bottom: 8, left: 8, fontSize: 10, color: '#aaa' }}>
