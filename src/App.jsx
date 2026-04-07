@@ -216,7 +216,7 @@ export default function App() {
 
         {/* Preview */}
         <div style={{ position: 'relative', flex: 1, overflow: 'hidden', display: showSecond ? 'block' : 'none' }}>
-          <div ref={previewRef} style={{ height: '100%', padding: 16, overflow: 'auto', boxSizing: 'border-box' }}
+          <div ref={previewRef} className="preview" style={{ height: '100%', padding: 16, overflow: 'auto', boxSizing: 'border-box' }}
             dangerouslySetInnerHTML={{ __html: marked(text) }} />
           <div style={{ position: 'absolute', top: 8, right: 8 }}>
             {iconBtn(() => setSplit(s => s === 0 ? 50 : 0), <ExpandIcon dir={split === 0 ? 'left' : 'right'} />)}
