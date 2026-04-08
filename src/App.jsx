@@ -3,6 +3,7 @@ import { marked } from 'marked'
 import hljs from 'highlight.js'
 
 marked.use({
+  breaks: true,
   renderer: {
     code({ text, lang }) {
       const language = hljs.getLanguage(lang) ? lang : 'plaintext'
@@ -158,13 +159,13 @@ export default function App() {
   const showDivider = split > 0 && split < 100
 
   const copyBtn = (type, label) => (
-    <button onClick={() => copy(type)} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', fontSize: 11, cursor: 'pointer', color: copied === type ? '#16a34a' : '#444', background: 'rgba(255,255,255,0.9)', border: '1px solid #ccc', borderRadius: 4 }}>
+    <button onClick={() => copy(type)} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', fontSize: 11, cursor: 'pointer', color: copied === type ? '#16a34a' : 'var(--text)', background: 'var(--btn-bg)', border: '1px solid var(--btn-border)', borderRadius: 4 }}>
       <CopyIcon />{copied === type ? 'Copied!' : label}
     </button>
   )
 
   const iconBtn = (onClick, children) => (
-    <button onClick={onClick} style={{ display: 'flex', padding: 3, cursor: 'pointer', color: '#888', background: 'rgba(255,255,255,0.85)', border: '1px solid #ddd', borderRadius: 4 }}>
+    <button onClick={onClick} style={{ display: 'flex', padding: 3, cursor: 'pointer', color: 'var(--text)', background: 'var(--btn-bg)', border: '1px solid var(--btn-border)', borderRadius: 4 }}>
       {children}
     </button>
   )
@@ -174,13 +175,13 @@ export default function App() {
     : { width: showSecond ? `${split}%` : '100%', height: '100%' }
 
   const dividerStyle = vertical
-    ? { height: 5, cursor: 'row-resize', background: '#ccc', flexShrink: 0, width: '100%' }
-    : { width: 5, cursor: 'col-resize', background: '#ccc', flexShrink: 0 }
+    ? { height: 4, cursor: 'row-resize', background: 'var(--divider-bg)', flexShrink: 0, width: '100%' }
+    : { width: 4, cursor: 'col-resize', background: 'var(--divider-bg)', flexShrink: 0 }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'sans-serif' }}>
-      <header style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px 12px', borderBottom: '1px solid #ccc', fontSize: 12, color: '#666', flexShrink: 0 }}>
-        <strong style={{ color: '#000' }}>delempty</strong>
+      <header style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px 12px', borderBottom: '1px solid var(--border)', fontSize: 12, color: 'var(--text)', flexShrink: 0, background: 'var(--header-bg)' }}>
+        <strong style={{ color: 'var(--text-h)' }}>delempty</strong>
         <span style={{ display: window.innerWidth < 480 ? 'none' : '' }}>ペーストで空行を自動削除するMarkdownプレビュー</span>
         <div style={{ marginLeft: 'auto' }}>
           {iconBtn(() => { setVertical(v => !v); setSplit(50) }, <LayoutIcon vertical={vertical} />)}
@@ -191,11 +192,11 @@ export default function App() {
         {/* Editor */}
         <div style={{ ...firstSize, position: 'relative', flexShrink: 0, display: showFirst ? 'block' : 'none' }}>
           <textarea
-            style={{ width: '100%', height: '100%', padding: 16, paddingBottom: 40, fontSize: 14, resize: 'none', border: 'none', outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', height: '100%', padding: 16, paddingBottom: 40, fontSize: 14, resize: 'none', border: 'none', outline: 'none', boxSizing: 'border-box', background: 'var(--editor-bg)', color: 'var(--text)' }}
             value={text} onChange={e => setText(e.target.value)} onPaste={handlePaste} onSelect={syncScroll} onKeyUp={syncScroll}
             placeholder="Markdown を入力..."
           />
-          <div style={{ position: 'absolute', bottom: 8, left: 8, fontSize: 10, color: '#aaa' }}>
+          <div style={{ position: 'absolute', bottom: 8, left: 8, fontSize: 10, color: 'var(--text)' }}>
             {text.length} 文字
           </div>
           <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 6 }}>
